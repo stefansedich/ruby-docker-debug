@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  service1:
+    image: ruby:2.5
+    working_dir: /app
+    command: bash -c 'bundle install && bundle exec ruby app.rb'
+    volumes:
+      - ../service1:/app
+      - bundle-cache:/usr/local/bundle
+    ports:
+      - 8080:8080
+
+  service2:
+    image: ruby:2.5
+    working_dir: /app
+    command: bash -c 'bundle install && bundle exec ruby app.rb'
+    volumes:
+      - ../service2:/app
+      - bundle-cache:/usr/local/bundle
+    ports:
+      - 8081:8081
+
+volumes:
+  bundle-cache:

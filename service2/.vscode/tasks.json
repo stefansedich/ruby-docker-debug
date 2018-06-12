@@ -1,0 +1,89 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "debug",
+            "command": "bin/ruby-debug-ide",
+            "isBackground": true,
+            "type": "shell",
+            "args": [
+                "${workspaceFolderBasename}",
+                "${file}"
+            ],
+            "options": {
+                "cwd": "../docker"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "____"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Attaching to docker",
+                    "endsPattern": "Fast Debugger"
+                }
+            }
+        },
+        {
+            "label": "debug-specs-all",
+            "command": "bin/ruby-debug-ide",
+            "isBackground": true,
+            "args": [
+                "${workspaceFolderBasename}",
+                "rspec"
+            ],
+            "options": {
+                "cwd": "../docker"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "____"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Attaching to docker",
+                    "endsPattern": "Fast Debugger"
+                }
+            }
+        },
+        {
+            "label": "debug-specs-active",
+            "command": "bin/ruby-debug-ide",
+            "isBackground": true,
+            "args": [
+                "${workspaceFolderBasename}",
+                "rspec",
+                "-I",
+                "${workspaceRoot}",
+                "${file}"
+            ],
+            "options": {
+                "cwd": "../docker"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "____"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Attaching to docker",
+                    "endsPattern": "Fast Debugger"
+                }
+            }
+        }
+    ]
+}

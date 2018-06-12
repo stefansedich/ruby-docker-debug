@@ -1,0 +1,78 @@
+#!/bin/bash
+
+set -e
+
+if [[ $# -eq 0 ]] ; then
+  echo 'You need to provide the name of the service to debug.'
+  exit 1
+fi
+
+service_name=$1
+service_root=$(cd "../$service_name" && pwd -P)
+temp_bundle_path="$service_root/tmp/bundle"
+gem_path=$(cd "$service_root" && gem env home)
+script=${2}
+args=""
+
+# Correctly parse out and escape the passed in arguments.
+if [[ "$#" -gt 2 ]]; then
+  args="$(printf " %q" "${@:3}")"
+fi
+
+# Create temp bundle folder and symlink the required bits
+# from the system gems path into it, this will allow VSCode
+# to step into installed gems properly as they will "appear"
+# to be within the project workspace.
+mkdir -p "$(dirname "$temp_bundle_path/gems")"
+ln -sf "$gem_path/gems" "$temp_bundle_path/gems"
+ln -sf "$gem_path/bundler" "$temp_bundle_path/bundler"
+
+# Create trap to delete the temp bundle folder on exit.
+trap 'rm -rf "$temp_bundle_path"' ERR EXIT
+
+# Create the docker-compose overrides file for the service
+# being debugged, this will setup the correct project root to
+# match the workspase root and expose the requited ports for remote debugging.
+#
+# It will also configure BUNDLE_PATH and GEM_HOME to point to the
+# new bundle temp path within the workspace root so that debugging
+# installed gems will work as expected.
+cat <<EOF > "/tmp/docker-compose.$service_name.yml"
+version: '3'
+services:
+
+  $service_name:
+    command:
+      - bash
+      - -c
+      - |
+        script="$script"
+
+        # If the script to be executed exists within the bundle
+        # bin then expand the path to the absolute path.
+        if [[ -f "\$\$BUNDLE_PATH/bin/\$\$script" ]]; then
+          script="\$\$BUNDLE_PATH/bin/\$\$script"
+        fi
+
+        # Run a bundle install and then fire up rdebug-ide
+        # passing in our desired script and arguments.
+        bundle install && \
+        "\$\$BUNDLE_PATH/bin/rdebug-ide" \
+          --host 0.0.0.0 \
+          --port 1234 \
+          --dispatcher-port 26162 \
+          -- \
+          "\$\$script" $args
+    working_dir: $service_root
+    environment:
+      - BUNDLE_PATH=$temp_bundle_path
+    ports:
+      - 1234:1234
+      - 26162:26162
+    volumes:
+      - $service_root:$service_root
+      - bundle-cache:$temp_bundle_path
+EOF
+
+docker-compose -f docker-compose.yml -f "/tmp/docker-compose.$service_name.yml" up "$service_name"
+docker-compose up -d "$service_name"
