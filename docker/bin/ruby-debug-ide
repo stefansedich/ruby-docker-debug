@@ -57,7 +57,9 @@ services:
         # Run a bundle install and then fire up rdebug-ide
         # passing in our desired script and arguments.
         bundle install && \
-        "\$\$BUNDLE_PATH/bin/rdebug-ide" \
+        RUBYOPT='-rbundler/setup' ruby -e \
+          'at_exit{sleep(1)};\$\$stdout.sync=true;\$\$stderr.sync=true;load(\$\$0=ARGV.shift)' \
+          "\$\$BUNDLE_PATH/bin/rdebug-ide" \
           --host 0.0.0.0 \
           --port 1234 \
           --dispatcher-port 26162 \
