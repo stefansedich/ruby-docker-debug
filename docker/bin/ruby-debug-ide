@@ -22,9 +22,9 @@ fi
 # being debugged, this will setup the correct project root to
 # match the workspase root and expose the requited ports for remote debugging.
 #
-# It will also configure BUNDLE_PATH and GEM_HOME to point to the
-# new bundle temp path within the workspace root so that debugging
-# installed gems will work as expected.
+# It will also configure BUNDLE_PATH and GEM_HOME so that it's path
+# matches where the gems are installed locally, this will ensure that
+# stepping into the sources of installed gems works.
 cat <<EOF > "/tmp/docker-compose.$service_name.yml"
 version: '3'
 services:
